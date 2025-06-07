@@ -6,10 +6,45 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
 const app = express();
+
+// parse json
 app.use(express.json());
+
+// serve ./static/
+app.use(express.static("./static"));
 
 // Map to store transports by session ID
 const transports = {};
+
+// this variable holds the question that the model is asking
+let globalQuestion = ""; // user can only ask a question if this is not empty
+
+// this variable holds the answer that the user is providing
+let globalAnswer = "";
+
+// ui routes
+
+// get question
+app.get("/question", (req, res) => {
+  res.json({ question: globalQuestion });
+});
+
+// set answer
+app.post("/answer", (req, res) => {
+  console.log(req);
+  // log all keys of req
+  console.log(Object.keys(req));
+
+  const { answer: userAnswer } = req.body;
+
+  if (!userAnswer) return res.json({ error: "Answer is required" });
+  if (!globalQuestion) return res.json({ error: "No question to answer" });
+  if (globalAnswer) return res.json({ error: "Answer is already set" });
+
+  globalAnswer = userAnswer;
+  globalQuestion = "";
+  res.json({ answer: globalAnswer });
+});
 
 // Handle POST requests for client-to-server communication
 app.post("/mcp", async (req, res) => {
@@ -50,8 +85,12 @@ app.post("/mcp", async (req, res) => {
       },
       async ({ question }) => {
         console.log(`Model asked: ${question}`);
+        globalQuestion = question;
+
+        // TODO: wait for user to answer with a POST request to /answer
+
         return {
-          content: [{ type: "text", text: "foobar" }],
+          content: [{ type: "text", text: globalAnswer }],
         };
       },
       {

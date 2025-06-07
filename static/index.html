@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ask MCP</title>
+  </head>
+  <body>
+    <h1>Ask MCP</h1>
+    <div class="question" id="question">Question goes here</div>
+    <input
+      type="text"
+      id="answer"
+      class="answer"
+      placeholder="Answer goes here"
+      autofocus
+    />
+    <button class="send">Send</button>
+    <script>
+      const questionDiv = document.getElementById("question");
+      const answerInput = document.getElementById("answer");
+      const sendButton = document.querySelector(".send");
+
+      // function to get question
+      async function getQuestion() {
+        const response = await fetch("/question");
+        const data = await response.json();
+        questionDiv.textContent = data.question;
+      }
+
+      // function to set answer
+      async function setAnswer(answer) {
+        const response = await fetch("/answer", {
+          method: "POST",
+          body: JSON.stringify({ answer }),
+        }).catch((error) => {
+          console.error("Error setting answer:", error);
+
+          // if error response has error property, display it
+          if (response?.error) {
+            alert(response.error);
+          }
+        });
+      }
+
+      // on load, get the question and display it
+      getQuestion();
+
+      // on send button click, set the answer and get the question
+      sendButton.addEventListener("click", () => {
+        setAnswer(answerInput.value);
+        answerInput.value = "";
+      });
+    </script>
+  </body>
+</html>
