@@ -20,15 +20,41 @@
       const answerInput = document.getElementById("answer");
       const sendButton = document.querySelector(".send");
 
+      // Establish WebSocket connection
+      const ws = new WebSocket(`ws://${window.location.host}/question-ws`);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.question) {
+          questionDiv.textContent = data.question;
+          answerInput.disabled = false;
+          sendButton.disabled = false;
+        } else {
+          questionDiv.textContent = "No question yet";
+          answerInput.disabled = true;
+          sendButton.disabled = true;
+        }
+      };
+
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      ws.onclose = () => {
+        console.log("WebSocket disconnected");
+      };
+
       // function to get question
       async function getQuestion() {
+        // This function might become redundant if WebSocket handles all updates
+        // but keeping it for initial load or fallback for now.
         const response = await fetch("/question");
-
         const data = await response.json();
-
         questionDiv.textContent = data.question || "No question yet";
-
-        // if question is empty, disable the textarea and the send button
         if (!data.question) {
           answerInput.disabled = true;
           sendButton.disabled = true;

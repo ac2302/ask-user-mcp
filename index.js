@@ -4,8 +4,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import expressWs from "express-ws";
 
 const app = express();
+const wsInstance = expressWs(app);
 
 // parse json
 app.use(express.json());
@@ -16,8 +18,11 @@ app.use(express.static("./static"));
 // Map to store transports by session ID
 const transports = {};
 
+// Add a WebSocket clients array
+const wsClients = [];
+
 // this variable holds the question that the model is asking
-let globalQuestion = ""; // user can only ask a question if this is not empty
+let _globalQuestion = "";
 
 // this variable holds the answer that the user is providing
 let globalAnswer = "";
@@ -25,10 +30,39 @@ let globalAnswer = "";
 // Add a new variable to store the resolve function of the promise
 let currentAnswerPromiseResolve = null;
 
+// Override the setter for globalQuestion to also send updates via WebSocket
+Object.defineProperty(global, "globalQuestion", {
+  get: () => _globalQuestion,
+  set: (newQuestion) => {
+    _globalQuestion = newQuestion;
+    // Send the new question to all connected WebSocket clients
+    wsClients.forEach((ws) => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({ question: newQuestion }));
+      }
+    });
+  },
+});
 
 // get question
 app.get("/question", (req, res) => {
   res.json({ question: globalQuestion });
+});
+
+// WebSocket endpoint
+app.ws("/question-ws", (ws, req) => {
+  wsClients.push(ws);
+  console.log("WebSocket client connected");
+
+  // Send current question to newly connected client
+  if (globalQuestion) {
+    ws.send(JSON.stringify({ question: globalQuestion }));
+  }
+
+  ws.on("close", () => {
+    wsClients.splice(wsClients.indexOf(ws), 1);
+    console.log("WebSocket client disconnected");
+  });
 });
 
 // set answer
