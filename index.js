@@ -5,6 +5,9 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import expressWs from "express-ws";
+import open from "open";
+
+const PORT = process.argv[2] ? parseInt(process.argv[2]) : 7878;
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -136,6 +139,12 @@ app.post("/mcp", async (req, res) => {
         console.log(`Model asked: ${question}`);
         globalQuestion = question;
 
+        // open localhost:PORT/ if wsClients.length === 0
+        if (wsClients.length === 0) {
+          // open localhost:PORT/ in the browser
+          open(`http://localhost:${PORT}`);
+        }
+
         // Create a new promise and store its resolve function
         const answerPromise = new Promise((resolve) => {
           currentAnswerPromiseResolve = resolve;
@@ -194,8 +203,6 @@ app.get("/mcp", handleSessionRequest);
 
 // Handle DELETE requests for session termination
 app.delete("/mcp", handleSessionRequest);
-
-const PORT = process.argv[2] ? parseInt(process.argv[2]) : 7878;
 
 app.listen(PORT, () => {
   console.log(`MCP Server listening on port ${PORT}`);
