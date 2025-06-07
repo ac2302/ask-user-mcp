@@ -30,17 +30,34 @@
 
       // function to set answer
       async function setAnswer(answer) {
-        const response = await fetch("/answer", {
-          method: "POST",
-          body: JSON.stringify({ answer }),
-        }).catch((error) => {
-          console.error("Error setting answer:", error);
+        try {
+          const response = await fetch("/answer", {
+            method: "POST",
+            body: JSON.stringify({ answer }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
 
-          // if error response has error property, display it
-          if (response?.error) {
-            alert(response.error);
+          const data = await response.json();
+
+          if (!response.ok) {
+            if (data.error) {
+              alert(data.error);
+            } else {
+              alert("An unknown error occurred.");
+            }
+            return;
           }
-        });
+
+          // Optionally, do something with the successful response data
+          console.log("Answer set successfully:", data);
+        } catch (error) {
+          console.error("Error setting answer:", error);
+          alert("Network error or unable to connect to server.");
+        } finally {
+          getQuestion();
+        }
       }
 
       // on load, get the question and display it
