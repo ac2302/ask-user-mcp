@@ -8,13 +8,12 @@
   <body>
     <h1>Ask MCP</h1>
     <div class="question" id="question">Question goes here</div>
-    <input
-      type="text"
+    <textarea
       id="answer"
       class="answer"
       placeholder="Answer goes here"
       autofocus
-    />
+    ></textarea>
     <button class="send">Send</button>
     <script>
       const questionDiv = document.getElementById("question");
@@ -24,8 +23,19 @@
       // function to get question
       async function getQuestion() {
         const response = await fetch("/question");
+
         const data = await response.json();
-        questionDiv.textContent = data.question;
+
+        questionDiv.textContent = data.question || "No question yet";
+
+        // if question is empty, disable the textarea and the send button
+        if (!data.question) {
+          answerInput.disabled = true;
+          sendButton.disabled = true;
+        } else {
+          answerInput.disabled = false;
+          sendButton.disabled = false;
+        }
       }
 
       // function to set answer

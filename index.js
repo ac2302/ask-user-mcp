@@ -37,13 +37,16 @@ app.post("/answer", (req, res) => {
 
   const { answer: userAnswer } = req.body;
 
-  if (!userAnswer) return res.json({ error: "Answer is required" });
-  if (!globalQuestion) return res.json({ error: "No question to answer" });
-  if (globalAnswer) return res.json({ error: "Answer is already set" });
+  if (!userAnswer) return res.status(400).json({ error: "Answer is required" });
+  if (!globalQuestion)
+    return res.status(400).json({ error: "No question to answer" });
+  if (globalAnswer)
+    return res.status(400).json({ error: "Answer is already set" });
 
   globalAnswer = userAnswer;
   globalQuestion = "";
-  res.json({ answer: globalAnswer });
+  console.log("Answer received successfully:", globalAnswer);
+  return res.json({ answer: globalAnswer });
 });
 
 // Handle POST requests for client-to-server communication
@@ -89,8 +92,12 @@ app.post("/mcp", async (req, res) => {
 
         // TODO: wait for user to answer with a POST request to /answer
 
+        const selectedAnswer = globalAnswer;
+
+        globalAnswer = "";
+
         return {
-          content: [{ type: "text", text: globalAnswer }],
+          content: [{ type: "text", text: selectedAnswer }],
         };
       },
       {
