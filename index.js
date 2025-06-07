@@ -22,7 +22,9 @@ let globalQuestion = ""; // user can only ask a question if this is not empty
 // this variable holds the answer that the user is providing
 let globalAnswer = "";
 
-// ui routes
+// Add a new variable to store the resolve function of the promise
+let currentAnswerPromiseResolve = null;
+
 
 // get question
 app.get("/question", (req, res) => {
@@ -45,12 +47,22 @@ app.post("/answer", (req, res) => {
 
   globalAnswer = userAnswer;
   globalQuestion = "";
+
+  // Resolve the promise when an answer is received
+  if (currentAnswerPromiseResolve) {
+    currentAnswerPromiseResolve();
+    currentAnswerPromiseResolve = null;
+  }
+
   console.log("Answer received successfully:", globalAnswer);
   return res.json({ answer: globalAnswer });
 });
 
 // Handle POST requests for client-to-server communication
 app.post("/mcp", async (req, res) => {
+  // remove timeout
+  req.setTimeout(0);
+
   // Check for existing session ID
   const sessionId = req.headers["mcp-session-id"];
   let transport;
@@ -90,7 +102,13 @@ app.post("/mcp", async (req, res) => {
         console.log(`Model asked: ${question}`);
         globalQuestion = question;
 
-        // TODO: wait for user to answer with a POST request to /answer
+        // Create a new promise and store its resolve function
+        const answerPromise = new Promise((resolve) => {
+          currentAnswerPromiseResolve = resolve;
+        });
+
+        // Wait for the promise to resolve (i.e., for the user to answer)
+        await answerPromise;
 
         const selectedAnswer = globalAnswer;
 
