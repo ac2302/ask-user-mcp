@@ -34,6 +34,14 @@ To start the `ask-user-mcp` server, you can use one of the following commands:
   ```
   (e.g., `npx ask-user-mcp 8080`)
 
+**Running on startup with cron:**
+
+You can also configure `ask-user-mcp` to run automatically on system reboot using cron. Add the following line to your crontab:
+
+```bash
+@reboot npx -y ask-user-mcp@latest
+```
+
 Once the server is running, it will open a browser window to `http://localhost:<PORT_NUMBER>` (or `http://localhost:7878` if no port is specified) where the user can see questions from the model and provide answers.
 
 ## Connection Instructions
