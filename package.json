@@ -11,8 +11,8 @@
   "bin": {
     "ask-user-mcp": "./index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["mcp"],
+  "author": "ac2302",
   "license": "ISC",
   "packageManager": "pnpm@10.7.1",
   "dependencies": {
