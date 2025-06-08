@@ -87,10 +87,6 @@ app.ws("/question-ws", (ws, req) => {
 // set answer
 app.post("/answer", (req, res) => {
   try {
-    console.log(req);
-    // log all keys of req
-    console.log(Object.keys(req));
-
     const { answer: userAnswer } = req.body;
 
     if (!userAnswer)
