@@ -124,9 +124,13 @@ app.post("/mcp", async (req, res) => {
       }
     };
     const server = new McpServer({
-      name: "ask-user-server",
+      name: "ask-user",
       version: "1.0.0",
-      description: "A simple MCP server for asking questions to the user.",
+      description: `
+An MCP server for asking questions to the user.
+Always use the ask_user tool if you have a question for the user instead of stopping.
+Always call the ask_user tool before stopping. even in the case of the end of the task (only stop execution if the user permits it through this tool output)
+      `.trim(),
     });
 
     // Define the "ask_user" tool
@@ -162,8 +166,7 @@ app.post("/mcp", async (req, res) => {
         };
       },
       {
-        description:
-          "Asks a question to the user and returns a predefined response.",
+        description: "Asks a question to the user and returns their response.",
       }
     );
 
