@@ -8,6 +8,11 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import expressWs from "express-ws";
 import open from "open";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.argv[2] ? parseInt(process.argv[2]) : 7878;
 
@@ -18,7 +23,7 @@ const wsInstance = expressWs(app);
 app.use(express.json());
 
 // serve ./static/
-app.use(express.static("./static"));
+app.use(express.static(path.join(__dirname, "static")));
 
 // Map to store transports by session ID
 const transports = {};
